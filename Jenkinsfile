@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-u root'
+        }
+    }
 
     stages {
         stage('Checkout') {
@@ -10,20 +15,18 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'apt-get update -y'
-                sh 'apt-get install -y python3 python3-pip'
-                sh 'pip3 install -r requirements.txt'
+                sh 'pip install -r requirements.txt'
             }
         }
 
-        stage('Start Redfish Mock (as OpenBMC substitute)') {
+        stage('Start Redfish Mock') {
             steps {
-                sh 'nohup python3 redfish_mock.py > mock.log 2>&1 &'
+                sh 'nohup python redfish_mock.py > mock.log 2>&1 &'
                 sh 'sleep 5'
             }
         }
 
-        stage('Run PyTest (Autotests)') {
+        stage('Run PyTest') {
             steps {
                 sh 'pytest test_redfish.py --junitxml=pytest_report.xml -v'
             }
@@ -35,7 +38,7 @@ pipeline {
             }
         }
 
-        stage('Run Load Testing (Locust)') {
+        stage('Run Load Testing') {
             steps {
                 sh 'locust -f locustfile.py --headless -u 10 -r 2 --run-time 30s --html=locust_report.html'
             }
