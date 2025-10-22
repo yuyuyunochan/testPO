@@ -1,4 +1,3 @@
-// Jenkinsfile
 pipeline {
     agent any
 
@@ -16,7 +15,8 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'sudo dnf install -y python3 python3-pip'
+                sh 'apt-get update'
+                sh 'apt-get install -y python3 python3-pip'
                 sh '${PIP} install -r requirements.txt'
             }
         }
@@ -24,7 +24,7 @@ pipeline {
         stage('Start Redfish Mock (as OpenBMC substitute)') {
             steps {
                 sh 'nohup ${PYTHON} redfish_mock.py > mock.log 2>&1 &'
-                sh 'sleep 5' // дать время на запуск
+                sh 'sleep 5'
             }
         }
 
