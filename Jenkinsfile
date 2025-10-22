@@ -1,9 +1,9 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-u root'
-        }
+    agent any
+
+    environment {
+        PYTHON = '/usr/bin/python3'
+        PIP = '/usr/bin/pip3'
     }
 
     stages {
@@ -13,22 +13,22 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Python Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '${PIP} install --user -r requirements.txt'
             }
         }
 
         stage('Start Redfish Mock') {
             steps {
-                sh 'nohup python redfish_mock.py > mock.log 2>&1 &'
+                sh 'nohup ${PYTHON} redfish_mock.py > mock.log 2>&1 &'
                 sh 'sleep 5'
             }
         }
 
         stage('Run PyTest') {
             steps {
-                sh 'pytest test_redfish.py --junitxml=pytest_report.xml -v'
+                sh '${PYTHON} -m pytest test_redfish.py --junitxml=pytest_report.xml -v'
             }
             post {
                 always {
@@ -40,7 +40,7 @@ pipeline {
 
         stage('Run Load Testing') {
             steps {
-                sh 'locust -f locustfile.py --headless -u 10 -r 2 --run-time 30s --html=locust_report.html'
+                sh '${PYTHON} -m locust -f locustfile.py --headless -u 10 -r 2 --run-time 30s --html=locust_report.html'
             }
             post {
                 always {
