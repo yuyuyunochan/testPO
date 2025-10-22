@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        PYTHON = 'python3'
-        PIP = 'pip3'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -15,15 +10,15 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'apt-get update'
+                sh 'apt-get update -y'
                 sh 'apt-get install -y python3 python3-pip'
-                sh '${PIP} install -r requirements.txt'
+                sh 'pip3 install -r requirements.txt'
             }
         }
 
         stage('Start Redfish Mock (as OpenBMC substitute)') {
             steps {
-                sh 'nohup ${PYTHON} redfish_mock.py > mock.log 2>&1 &'
+                sh 'nohup python3 redfish_mock.py > mock.log 2>&1 &'
                 sh 'sleep 5'
             }
         }
@@ -34,7 +29,7 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'pytest_report.xml', fingerprint: true
+                    archiveArtifacts artifacts: 'pytest_report.xml'
                     junit 'pytest_report.xml'
                 }
             }
@@ -46,7 +41,7 @@ pipeline {
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'locust_report.html', fingerprint: true
+                    archiveArtifacts artifacts: 'locust_report.html'
                 }
             }
         }
@@ -60,7 +55,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'mock.log', fingerprint: true
+            archiveArtifacts artifacts: 'mock.log'
         }
     }
 }
