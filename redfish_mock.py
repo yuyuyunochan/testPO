@@ -1,4 +1,3 @@
-# redfish_mock.py (обновлённая версия)
 from flask import Flask, jsonify, request
 import time
 import signal

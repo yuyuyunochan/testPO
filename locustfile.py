@@ -1,7 +1,6 @@
 from locust import HttpUser, task, between
 import requests
 
-# Отключаем предупреждения SSL (не нужно для HTTP)
 requests.packages.urllib3.disable_warnings()
 
 class RedfishUser(HttpUser):
